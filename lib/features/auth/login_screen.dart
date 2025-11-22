@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'providers/auth_provider.dart';
+import '../../data/models/auth_token.dart';
 import '../../router.dart' show updateGlobalAuthNotifier;
 
 class LoginScreen extends ConsumerStatefulWidget {
