@@ -18,8 +18,27 @@ class SettingsService {
   }
 
   Future<UserSettings> updateSettings(Map<String, dynamic> data) async {
-    final response = await _apiClient.dio.patch('/settings', data: data);
-    return UserSettings.fromJson(response.data as Map<String, dynamic>);
+    try {
+      debugPrint('💾 [SETTINGS_SERVICE] Updating settings with data: $data');
+      final response = await _apiClient.dio.patch('/settings', data: data);
+      debugPrint('✅ [SETTINGS_SERVICE] Settings updated successfully');
+      debugPrint('   - Response: ${response.statusCode}');
+      debugPrint('   - Response data: ${response.data}');
+      return UserSettings.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('❌ [SETTINGS_SERVICE] Error updating settings: $e');
+      if (e is DioException) {
+        debugPrint('   - Status code: ${e.response?.statusCode}');
+        debugPrint('   - Response data: ${e.response?.data}');
+        debugPrint('   - Error type: ${e.type}');
+        final errorMessage = e.response?.data?['message'] ?? 
+                            e.response?.data?['error'] ?? 
+                            e.message ?? 
+                            'Failed to save settings';
+        throw Exception(errorMessage);
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> uploadLogo(XFile imageFile) async {
