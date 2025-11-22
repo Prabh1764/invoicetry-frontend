@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Save the original working directory (Vercel's project root)
+ORIGINAL_DIR="$(pwd)"
+echo "📁 Original directory: $ORIGINAL_DIR"
+
 echo "🚀 Installing Flutter..."
 
 # Install Flutter using git (more reliable)
@@ -15,25 +19,19 @@ export PATH="$PATH:/tmp/flutter/bin"
 # Verify Flutter installation
 flutter --version
 
-# Navigate to project directory
-# Vercel sets VERCEL_SOURCE_DIR, but we need to find the actual project root
-if [ -n "$VERCEL_SOURCE_DIR" ]; then
-  cd "$VERCEL_SOURCE_DIR"
-else
-  # Try to find the project root by looking for pubspec.yaml
-  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-  cd "$SCRIPT_DIR"
-fi
+# Return to project directory
+cd "$ORIGINAL_DIR"
+echo "📁 Back to project directory: $(pwd)"
 
-# Make sure we're in the right directory (should have pubspec.yaml)
+# Verify we're in the right place
 if [ ! -f "pubspec.yaml" ]; then
-  echo "❌ Error: pubspec.yaml not found in current directory: $(pwd)"
+  echo "❌ Error: pubspec.yaml not found in: $(pwd)"
   echo "📁 Listing current directory:"
   ls -la
   exit 1
 fi
 
-echo "✅ Found project root at: $(pwd)"
+echo "✅ Found pubspec.yaml at: $(pwd)"
 
 echo "📦 Getting Flutter dependencies..."
 flutter pub get

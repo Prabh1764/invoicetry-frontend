@@ -1,6 +1,12 @@
 {
   "buildCommand": "bash build.sh",
   "outputDirectory": "build/web",
-  "installCommand": "echo 'Skipping install - will install Flutter in build script'",
-  "framework": null
+  "installCommand": "echo 'Flutter will be installed in build script'",
+  "framework": null,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
