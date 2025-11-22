@@ -105,8 +105,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         // On error, set to null (not authenticated)
         _globalAuthNotifier.value = null;
         _globalAuthNotifier.notifyListeners();
-    },
-  );
+      },
+    );
+  });
   
   // Initialize with current state (safely)
   final currentAuthState = ref.watch(authStateProvider);
