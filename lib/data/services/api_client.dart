@@ -46,15 +46,15 @@ class ApiClient {
             return 'http://localhost:3000';
           } else {
             debugPrint('🌐 [API_CLIENT] Running in production, using Render backend');
-            return 'https://invoictry-backend-1.onrender.com';
+            return 'https://invoictry-backend.onrender.com';
           }
         } catch (e) {
           debugPrint('⚠️ [API_CLIENT] Error detecting environment, using Render backend: $e');
-          return 'https://invoictry-backend-1.onrender.com';
+          return 'https://invoictry-backend.onrender.com';
         }
       }
       // Fallback to Render backend for production
-      return 'https://invoictry-backend-1.onrender.com';
+      return 'https://invoictry-backend.onrender.com';
     }
     
     // For mobile devices:
