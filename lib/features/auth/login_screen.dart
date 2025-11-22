@@ -45,10 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
       debugPrint('📡 [LOGIN] Calling authService.login() directly...');
       // Use services DIRECTLY - no Riverpod providers at all
-      final apiClient = ApiClient();
-      final authService = AuthService(apiClient);
+      ApiClient? apiClient;
+      AuthService? authService;
       
       try {
+        debugPrint('🔧 [LOGIN] Creating ApiClient...');
+        apiClient = ApiClient();
+        debugPrint('✅ [LOGIN] ApiClient created');
+        
+        debugPrint('🔧 [LOGIN] Creating AuthService...');
+        authService = AuthService(apiClient);
+        debugPrint('✅ [LOGIN] AuthService created');
+        
+        debugPrint('🔧 [LOGIN] Calling login method...');
         final token = await authService.login(email, password).timeout(
           const Duration(seconds: 60),
           onTimeout: () {
@@ -71,12 +80,27 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to home
         debugPrint('🚀 [LOGIN] Navigating to /home');
         context.go('/home');
-      } on Exception catch (e) {
+      } on Exception catch (e, stack) {
         debugPrint('❌ [LOGIN] Login error: $e');
+        debugPrint('   - Error type: ${e.runtimeType}');
+        debugPrint('   - Error toString: ${e.toString()}');
+        debugPrint('   - Stack: $stack');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login failed: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e, stack) {
+        debugPrint('💥 [LOGIN] Unexpected error type: ${e.runtimeType}');
+        debugPrint('   - Error: $e');
+        debugPrint('   - Stack: $stack');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unexpected error: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );

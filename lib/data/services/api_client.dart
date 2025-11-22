@@ -27,40 +27,49 @@ class ApiClient {
   static String _getBaseUrl() {
     // For web, use Render backend URL (production) or localhost (development)
     if (kIsWeb) {
-      final envUrl = dotenv.env['BACKEND_BASE_URL'];
+      // Safely try to get env URL - dotenv might not be loaded in production
+      String? envUrl;
+      try {
+        envUrl = dotenv.env['BACKEND_BASE_URL'];
+      } catch (e) {
+        debugPrint('⚠️ [API_CLIENT] Could not access dotenv (normal in production): $e');
+      }
+      
       if (envUrl != null && envUrl.isNotEmpty && !envUrl.contains('localhost')) {
         debugPrint('🌐 [API_CLIENT] Using Render backend URL from .env for web');
         return envUrl;
       }
-      // Check if running on localhost (development) or production (Netlify)
-      // If hostname is localhost, use local backend, otherwise use Render
-      if (kIsWeb) {
-        try {
-          // In production (Netlify), use Render backend
-          // In development (localhost), use local backend
-          final isLocalhost = Uri.base.host == 'localhost' || 
-                            Uri.base.host == '127.0.0.1' ||
-                            Uri.base.host.isEmpty;
-          if (isLocalhost) {
-            debugPrint('🌐 [API_CLIENT] Running locally, using localhost:3000');
-            return 'http://localhost:3000';
-          } else {
-            debugPrint('🌐 [API_CLIENT] Running in production, using Render backend');
-            return 'https://invoictry-backend.onrender.com';
-          }
-        } catch (e) {
-          debugPrint('⚠️ [API_CLIENT] Error detecting environment, using Render backend: $e');
+      
+      // Check if running on localhost (development) or production
+      try {
+        // In production (Render/Netlify), use Render backend
+        // In development (localhost), use local backend
+        final isLocalhost = Uri.base.host == 'localhost' || 
+                          Uri.base.host == '127.0.0.1' ||
+                          Uri.base.host.isEmpty;
+        if (isLocalhost) {
+          debugPrint('🌐 [API_CLIENT] Running locally, using localhost:3000');
+          return 'http://localhost:3000';
+        } else {
+          debugPrint('🌐 [API_CLIENT] Running in production, using Render backend');
           return 'https://invoictry-backend.onrender.com';
         }
+      } catch (e) {
+        debugPrint('⚠️ [API_CLIENT] Error detecting environment, using Render backend: $e');
+        return 'https://invoictry-backend.onrender.com';
       }
-      // Fallback to Render backend for production
-      return 'https://invoictry-backend.onrender.com';
     }
     
     // For mobile devices:
     // 1. If env URL is set and contains 'ngrok', use it (for remote access)
     // 2. Otherwise, use local network IP (for same-network access, no rate limits)
-    final envUrl = dotenv.env['BACKEND_BASE_URL'];
+    String? envUrl;
+    try {
+      envUrl = dotenv.env['BACKEND_BASE_URL'];
+    } catch (e) {
+      debugPrint('⚠️ [API_CLIENT] Could not access dotenv (normal in production): $e');
+    }
+    
     if (envUrl != null && envUrl.isNotEmpty) {
       // If ngrok URL is explicitly set, use it (for remote testing)
       if (envUrl.contains('ngrok')) {
@@ -91,7 +100,12 @@ class ApiClient {
 
   ApiClient() : baseUrl = _getBaseUrl() {
     debugPrint('🌐 [API_CLIENT] Initializing with baseUrl: $baseUrl');
-    debugPrint('   - BACKEND_BASE_URL from .env: ${dotenv.env['BACKEND_BASE_URL'] ?? 'NOT SET'}');
+    try {
+      final envUrl = dotenv.env['BACKEND_BASE_URL'];
+      debugPrint('   - BACKEND_BASE_URL from .env: ${envUrl ?? 'NOT SET'}');
+    } catch (e) {
+      debugPrint('   - BACKEND_BASE_URL from .env: NOT SET (dotenv not available)');
+    }
     
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
