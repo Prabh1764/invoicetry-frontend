@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'providers/auth_provider.dart';
+import '../../data/repositories/auth_repo.dart';
 import '../../router_simple.dart' show setAuthToken;
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -36,41 +37,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      final authNotifier = ref.read(authStateProvider.notifier);
-      await authNotifier.register(
+      // Use auth repo directly to get the token (no provider watching)
+      final authRepo = ref.read(authRepoProvider);
+      final token = await authRepo.register(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      if (mounted) {
-        // After registration, check if we have a token now
-        // The register method updates the auth state, so we can navigate
-        // Try to read the token from the provider state
-        try {
-          final authState = ref.read(authStateProvider);
-          authState.when(
-            data: (token) {
-              if (token != null && mounted) {
-                setAuthToken(token);
-                context.go('/home');
-              }
-            },
-            loading: () {},
-            error: (error, _) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(error.toString())),
-                );
-              }
-            },
-          );
-        } catch (e) {
-          // If reading provider fails, just try to navigate anyway
-          // The router will handle auth check
-          if (mounted) {
-            context.go('/home');
-          }
-        }
+      if (mounted && token != null) {
+        setAuthToken(token);
+        context.go('/home');
       }
     } catch (error) {
       if (mounted) {
