@@ -80,7 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       Future.microtask(() {
         try {
           ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
-        try {
+            try {
           debugPrint('👂 [ROUTER] Auth state changed!');
           final prevToken = previous?.valueOrNull;
           final nextToken = next.valueOrNull;
@@ -123,10 +123,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           debugPrint('❌ [ROUTER] Error in auth state listener: $e');
           debugPrint('   - Stack: $stack');
         }
+          });
+          debugPrint('✅ [ROUTER] Auth state listener registered (delayed)');
+        } catch (e, stack) {
+          debugPrint('❌ [ROUTER] Failed to register auth state listener (delayed): $e');
+          debugPrint('   - Error type: ${e.runtimeType}');
+          debugPrint('   - Stack: $stack');
+        }
       });
-      debugPrint('✅ [ROUTER] Auth state listener registered');
     } catch (e, stack) {
-      debugPrint('❌ [ROUTER] Failed to register auth state listener: $e');
+      debugPrint('❌ [ROUTER] Failed to schedule auth state listener: $e');
       debugPrint('   - Error type: ${e.runtimeType}');
       debugPrint('   - Stack: $stack');
       // Continue anyway - router will work without listener
