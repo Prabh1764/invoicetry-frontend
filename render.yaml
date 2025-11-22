@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: invoicetry-frontend
+    env: static
+    buildCommand: bash build.sh
+    staticPublishPath: build/web
+    envVars:
+      - key: FLUTTER_VERSION
+        value: 3.24.0
+      - key: NODE_VERSION
+        value: 20
+
