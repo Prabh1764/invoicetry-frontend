@@ -74,8 +74,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugPrint('🔧 [ROUTER] Creating router provider...');
     
     // Try to listen to auth state changes (wrap in try-catch to handle errors)
+    // Use a delayed approach to avoid initialization errors
     try {
-      ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
+      // Schedule listener registration after a microtask to avoid initialization issues
+      Future.microtask(() {
+        try {
+          ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
         try {
           debugPrint('👂 [ROUTER] Auth state changed!');
           final prevToken = previous?.valueOrNull;
@@ -128,45 +132,48 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Continue anyway - router will work without listener
     }
   
-    // Initialize with current state (safely)
-    AsyncValue<AuthToken?> currentAuthState;
+    // Initialize with current state (safely) - use read instead of watch to avoid errors
+    // Don't watch during router creation - let the listener handle updates
     try {
-      debugPrint('🔧 [ROUTER] Watching authStateProvider...');
-      currentAuthState = ref.watch(authStateProvider);
-      debugPrint('✅ [ROUTER] Successfully watched authStateProvider');
+      debugPrint('🔧 [ROUTER] Reading authStateProvider (non-reactive)...');
+      // Use read instead of watch to avoid reactive dependencies during initialization
+      // This prevents the minified:WR error
+      final currentAuthState = ref.read(authStateProvider);
+      debugPrint('✅ [ROUTER] Successfully read authStateProvider');
+      
+      currentAuthState.when(
+        data: (token) {
+          try {
+            if (_globalAuthNotifier.value != token) {
+              debugPrint('🔧 [ROUTER] Initializing global notifier: ${token != null ? "with token" : "null"}');
+              _globalAuthNotifier.value = token;
+            }
+          } catch (e, stack) {
+            debugPrint('❌ [ROUTER] Error in auth state data handler during init: $e');
+            debugPrint('   - Stack: $stack');
+          }
+        },
+        loading: () {
+          debugPrint('🔧 [ROUTER] Auth state loading during init, keeping current value');
+        },
+        error: (error, stack) {
+          debugPrint('🔧 [ROUTER] Auth state error during init: $error');
+          debugPrint('   - Stack: $stack');
+          try {
+            _globalAuthNotifier.value = null;
+          } catch (e) {
+            debugPrint('❌ [ROUTER] Error setting notifier to null during init: $e');
+          }
+        },
+      );
     } catch (e, stack) {
-      debugPrint('❌ [ROUTER] Error watching authStateProvider: $e');
+      debugPrint('❌ [ROUTER] Error reading authStateProvider: $e');
       debugPrint('   - Error type: ${e.runtimeType}');
       debugPrint('   - Stack: $stack');
-      // Use loading state as fallback
-      currentAuthState = const AsyncValue.loading();
+      // Continue anyway - router will work without initial auth state
+      // The listener will update it when auth state is ready
+      debugPrint('⚠️ [ROUTER] Continuing without initial auth state - listener will update when ready');
     }
-    
-    currentAuthState.when(
-      data: (token) {
-        try {
-          if (_globalAuthNotifier.value != token) {
-            debugPrint('🔧 [ROUTER] Initializing global notifier: ${token != null ? "with token" : "null"}');
-            _globalAuthNotifier.value = token;
-          }
-        } catch (e) {
-          debugPrint('❌ [ROUTER] Error initializing notifier: $e');
-        }
-      },
-      loading: () {
-        debugPrint('🔧 [ROUTER] Auth state is loading, keeping current value');
-      },
-      error: (error, stack) {
-        debugPrint('🔧 [ROUTER] Auth state error during init: $error');
-        debugPrint('   - Error type: ${error.runtimeType}');
-        debugPrint('   - Stack: $stack');
-        try {
-          _globalAuthNotifier.value = null;
-        } catch (e) {
-          debugPrint('❌ [ROUTER] Error setting notifier to null: $e');
-        }
-      },
-    );
 
   return GoRouter(
     initialLocation: '/login',
