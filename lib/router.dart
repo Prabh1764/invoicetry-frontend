@@ -70,9 +70,10 @@ void updateGlobalAuthNotifier(AuthToken? token) {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Listen to auth state changes and update the global notifier
-  // This will trigger the router's refreshListenable
-  ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
+  try {
+    // Listen to auth state changes and update the global notifier
+    // This will trigger the router's refreshListenable
+    ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
     debugPrint('👂 [ROUTER] Auth state changed!');
     final prevToken = previous?.valueOrNull;
     final nextToken = next.valueOrNull;
@@ -104,9 +105,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         // On error, set to null (not authenticated)
         _globalAuthNotifier.value = null;
         _globalAuthNotifier.notifyListeners();
-      },
+    },
+  );
+  } catch (e, stack) {
+    debugPrint('❌ [ROUTER] Error creating router: $e');
+    debugPrint('   - Error type: ${e.runtimeType}');
+    debugPrint('   - Stack: $stack');
+    
+    // Return a minimal router as fallback
+    return GoRouter(
+      initialLocation: '/login',
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const Scaffold(
+            body: Center(
+              child: Text('Router initialization error. Please reload.'),
+            ),
+          ),
+        ),
+      ],
     );
-  });
+  }
+});
   
   // Initialize with current state (safely)
   final currentAuthState = ref.watch(authStateProvider);

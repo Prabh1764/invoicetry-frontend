@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router.dart';
@@ -21,24 +22,57 @@ class App extends ConsumerWidget {
       );
     } catch (e, stack) {
       // Fallback if router fails
-      debugPrint('Error building app: $e');
-      debugPrint('Stack: $stack');
+      debugPrint('❌ [APP] Error building app: $e');
+      debugPrint('   - Error type: ${e.runtimeType}');
+      debugPrint('   - Error toString: ${e.toString()}');
+      debugPrint('   - Stack: $stack');
+      
+      // Try to extract more details
+      String errorMessage = 'Unknown error';
+      if (e is Error) {
+        errorMessage = e.toString();
+      } else if (e is Exception) {
+        errorMessage = e.toString();
+      } else {
+        errorMessage = '$e';
+      }
+      
       return MaterialApp(
         title: 'ProBilling',
         home: Scaffold(
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Error loading app'),
-                Text('$e'),
-                ElevatedButton(
-                  onPressed: () {
-                    // Try to rebuild
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'App Initialization Error',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Reload the page on web
+                      if (kIsWeb) {
+                        // ignore: avoid_web_libraries_in_flutter
+                        // ignore: undefined_prefixed_name
+                        import 'dart:html' as html;
+                        html.window.location.reload();
+                      }
+                    },
+                    child: const Text('Reload Page'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -46,4 +80,3 @@ class App extends ConsumerWidget {
     }
   }
 }
-
