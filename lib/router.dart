@@ -81,44 +81,44 @@ final routerProvider = Provider<GoRouter>((ref) {
         try {
           ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
             try {
-          debugPrint('👂 [ROUTER] Auth state changed!');
-          final prevToken = previous?.valueOrNull;
-          final nextToken = next.valueOrNull;
-          debugPrint('   - Previous: ${prevToken != null ? "had token" : "no token"}');
-          debugPrint('   - Next: ${nextToken != null ? "has token" : "no token"}');
-          
-          next.when(
-            data: (token) {
-              try {
-                debugPrint('   → Auth state is data, token: ${token != null ? "EXISTS" : "NULL"}');
-                if (token != null) {
-                  debugPrint('   → Token accessToken length: ${token.accessToken.length}');
-                }
-                if (_globalAuthNotifier.value != token) {
-                  debugPrint('   → Updating global notifier with token');
-                  _globalAuthNotifier.value = token;
-                  debugPrint('   → Updated notifier value: ${_globalAuthNotifier.value != null ? "SET" : "NULL"}');
-                } else {
-                  debugPrint('   → Token unchanged, skipping update');
-                }
-              } catch (e, stack) {
-                debugPrint('❌ [ROUTER] Error in auth state data handler: $e');
-                debugPrint('   - Stack: $stack');
-              }
-            },
-            loading: () {
-              debugPrint('   → Auth state loading, keeping current value');
-            },
-            error: (error, stack) {
-              debugPrint('   → Auth state error: $error');
-              debugPrint('   → Setting global notifier to null');
-              try {
-                _globalAuthNotifier.value = null;
-              } catch (e) {
-                debugPrint('❌ [ROUTER] Error setting notifier to null: $e');
-              }
-            },
-          );
+              debugPrint('👂 [ROUTER] Auth state changed!');
+              final prevToken = previous?.valueOrNull;
+              final nextToken = next.valueOrNull;
+              debugPrint('   - Previous: ${prevToken != null ? "had token" : "no token"}');
+              debugPrint('   - Next: ${nextToken != null ? "has token" : "no token"}');
+              
+              next.when(
+                data: (token) {
+                  try {
+                    debugPrint('   → Auth state is data, token: ${token != null ? "EXISTS" : "NULL"}');
+                    if (token != null) {
+                      debugPrint('   → Token accessToken length: ${token.accessToken.length}');
+                    }
+                    if (_globalAuthNotifier.value != token) {
+                      debugPrint('   → Updating global notifier with token');
+                      _globalAuthNotifier.value = token;
+                      debugPrint('   → Updated notifier value: ${_globalAuthNotifier.value != null ? "SET" : "NULL"}');
+                    } else {
+                      debugPrint('   → Token unchanged, skipping update');
+                    }
+                  } catch (e, stack) {
+                    debugPrint('❌ [ROUTER] Error in auth state data handler: $e');
+                    debugPrint('   - Stack: $stack');
+                  }
+                },
+                loading: () {
+                  debugPrint('   → Auth state loading, keeping current value');
+                },
+                error: (error, stack) {
+                  debugPrint('   → Auth state error: $error');
+                  debugPrint('   → Setting global notifier to null');
+                  try {
+                    _globalAuthNotifier.value = null;
+                  } catch (e) {
+                    debugPrint('❌ [ROUTER] Error setting notifier to null: $e');
+                  }
+                },
+              );
             } catch (e, stack) {
               debugPrint('❌ [ROUTER] Error in auth state listener: $e');
               debugPrint('   - Stack: $stack');
