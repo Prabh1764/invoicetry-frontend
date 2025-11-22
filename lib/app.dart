@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
+// Conditional import for web
+import 'dart:html' as html show window;
+
 class App extends ConsumerWidget {
   const App({super.key});
 
@@ -59,18 +62,15 @@ class App extends ConsumerWidget {
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Reload the page on web
-                      if (kIsWeb) {
+                  if (kIsWeb)
+                    ElevatedButton(
+                      onPressed: () {
+                        // Reload the page on web
                         // ignore: avoid_web_libraries_in_flutter
-                        // ignore: undefined_prefixed_name
-                        import 'dart:html' as html;
                         html.window.location.reload();
-                      }
-                    },
-                    child: const Text('Reload Page'),
-                  ),
+                      },
+                      child: const Text('Reload Page'),
+                    ),
                 ],
               ),
             ),

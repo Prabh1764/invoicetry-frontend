@@ -107,27 +107,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         _globalAuthNotifier.notifyListeners();
     },
   );
-  } catch (e, stack) {
-    debugPrint('❌ [ROUTER] Error creating router: $e');
-    debugPrint('   - Error type: ${e.runtimeType}');
-    debugPrint('   - Stack: $stack');
-    
-    // Return a minimal router as fallback
-    return GoRouter(
-      initialLocation: '/login',
-      routes: [
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const Scaffold(
-            body: Center(
-              child: Text('Router initialization error. Please reload.'),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-});
   
   // Initialize with current state (safely)
   final currentAuthState = ref.watch(authStateProvider);
@@ -368,5 +347,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  } catch (e, stack) {
+    debugPrint('❌ [ROUTER] Error creating router: $e');
+    debugPrint('   - Error type: ${e.runtimeType}');
+    debugPrint('   - Stack: $stack');
+    
+    // Return a minimal router as fallback
+    return GoRouter(
+      initialLocation: '/login',
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const Scaffold(
+            body: Center(
+              child: Text('Router initialization error. Please reload.'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 });
 
