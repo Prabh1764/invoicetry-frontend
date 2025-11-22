@@ -65,7 +65,7 @@ void updateGlobalAuthNotifier(AuthToken? token) {
   if (_globalAuthNotifier.value != token) {
     debugPrint('🔧 [ROUTER] Directly updating global auth notifier');
     _globalAuthNotifier.value = token;
-    _globalAuthNotifier.notifyListeners();
+    // ValueNotifier automatically notifies listeners when value changes
   }
 }
 

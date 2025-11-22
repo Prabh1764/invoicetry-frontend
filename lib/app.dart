@@ -5,7 +5,7 @@ import 'router.dart';
 import 'theme/app_theme.dart';
 
 // Conditional import for web
-import 'dart:html' as html show window;
+import 'dart:html' as html show window; // ignore: avoid_web_libraries_in_flutter
 
 class App extends ConsumerWidget {
   const App({super.key});

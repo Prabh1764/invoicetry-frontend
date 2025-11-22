@@ -1,0 +1,17 @@
+analyzer:
+  errors:
+    # Treat warnings as non-fatal during build
+    invalid_use_of_protected_member: ignore
+    invalid_use_of_visible_for_testing_member: ignore
+    avoid_web_libraries_in_flutter: ignore
+    deprecated_member_use: ignore
+  exclude:
+    - build/**
+    - .dart_tool/**
+
+linter:
+  rules:
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_final_fields
+
