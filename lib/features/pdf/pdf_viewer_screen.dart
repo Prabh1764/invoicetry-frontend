@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+// Conditionally import webview_flutter (not available on web)
+import 'package:webview_flutter/webview_flutter.dart'
+    if (dart.library.html) 'webview_stub.dart';
 import 'package:dio/dio.dart';
 import '../../data/services/api_client.dart';
 

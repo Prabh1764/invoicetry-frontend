@@ -9,7 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
+// Conditionally import path_provider (limited web support)
+import 'package:path_provider/path_provider.dart'
+    if (dart.library.html) 'path_provider_stub.dart';
 import 'package:path/path.dart' as path;
 import 'package:image_picker/image_picker.dart';
 import '../../widgets/app_card.dart';

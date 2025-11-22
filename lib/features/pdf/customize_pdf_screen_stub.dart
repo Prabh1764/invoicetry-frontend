@@ -1,7 +1,9 @@
 // Stub implementation for non-web platforms
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+// Conditionally import webview_flutter (not available on web)
+import 'package:webview_flutter/webview_flutter.dart'
+    if (dart.library.html) 'webview_stub.dart';
 
 /// Creates a preview widget for HTML content on mobile
 Widget createPreviewWidget(String htmlContent, String baseUrl) {
