@@ -45,5 +45,12 @@ if [ ! -d "build/web" ]; then
   exit 1
 fi
 
+# Copy _redirects file for Render SPA routing (if it exists)
+if [ -f "public/_redirects" ]; then
+  echo "📋 Copying _redirects file for SPA routing..."
+  cp public/_redirects build/web/_redirects
+  echo "✅ _redirects file copied"
+fi
+
 echo "✅ Build complete! Output in build/web"
 
