@@ -43,10 +43,18 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      debugPrint('📡 [LOGIN] Calling authNotifier.login()...');
-      final authNotifier = ref.read(authStateProvider.notifier);
+      debugPrint('📡 [LOGIN] Calling authService.login() directly...');
+      // Use services DIRECTLY - no Riverpod providers at all
+      final apiClient = ApiClient();
+      final authService = AuthService(apiClient);
+      
       try {
-        final token = await authNotifier.login(email, password);
+        final token = await authService.login(email, password).timeout(
+          const Duration(seconds: 60),
+          onTimeout: () {
+            throw Exception('Login request timed out. Please check your internet connection and try again.');
+          },
+        );
         debugPrint('✅ [LOGIN] Login successful! Token: ${token.accessToken.substring(0, 20)}...');
 
         if (!mounted) return;
@@ -60,31 +68,12 @@ class _LoginScreenState extends State<LoginScreen> {
         
         if (!mounted) return;
         
-        // Navigate to home - router redirect should handle it, but force it
+        // Navigate to home
         debugPrint('🚀 [LOGIN] Navigating to /home');
         context.go('/home');
-        
-        // Ensure navigation happens even if router redirect is slow
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (!mounted) return;
-          
-          await Future.delayed(const Duration(milliseconds: 100));
-          if (!mounted) return;
-          
-          final currentPath = GoRouterState.of(context).matchedLocation;
-          debugPrint('🔍 [LOGIN] Post-frame check - Current path: $currentPath');
-          
-          if (currentPath == '/login' || currentPath.startsWith('/login')) {
-            debugPrint('🚀 [LOGIN] Still on login page, forcing navigation to /home');
-            context.go('/home');
-          }
-        });
       } on Exception catch (e) {
         debugPrint('❌ [LOGIN] Login error: $e');
         if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login failed: ${e.toString()}'),
