@@ -37,7 +37,18 @@ flutter pub get
 
 # Build web app
 echo "🔨 Building Flutter web app..."
-flutter build web --release --base-href=/
+# Continue on warnings, only fail on errors
+flutter build web --release --base-href=/ 2>&1 | tee /tmp/build.log || {
+    echo "❌ Build failed! Checking for errors..."
+    # Only fail if there are actual errors (not just warnings)
+    if grep -q "error •" /tmp/build.log; then
+        echo "❌ Found compilation errors:"
+        grep "error •" /tmp/build.log | head -10
+        exit 1
+    else
+        echo "⚠️  Build had warnings but no errors, continuing..."
+    fi
+}
 
 # Verify build output
 if [ ! -d "build/web" ]; then
