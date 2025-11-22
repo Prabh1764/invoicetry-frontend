@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -32,15 +33,22 @@ void main() async {
     return true; // Prevent crashes
   };
   
-  try {
-    await dotenv.load(fileName: '.env');
-    debugPrint('✅ [MAIN] .env file loaded successfully');
-    debugPrint('   - BACKEND_BASE_URL: ${dotenv.env['BACKEND_BASE_URL'] ?? 'NOT SET'}');
-  } catch (e) {
-    // If .env file doesn't exist, use defaults (this is normal in production)
-    debugPrint('⚠️ [MAIN] Could not load .env file: $e');
-    debugPrint('   - This is normal in production builds');
-    debugPrint('   - Using default BACKEND_BASE_URL from api_client.dart');
+  // Don't try to load .env in production - it's not included in assets
+  // The api_client.dart will use the correct backend URL automatically
+  if (kDebugMode) {
+    // Only try to load .env in debug mode (local development)
+    try {
+      await dotenv.load(fileName: '.env');
+      debugPrint('✅ [MAIN] .env file loaded successfully');
+      debugPrint('   - BACKEND_BASE_URL: ${dotenv.env['BACKEND_BASE_URL'] ?? 'NOT SET'}');
+    } catch (e) {
+      // If .env file doesn't exist, use defaults
+      debugPrint('⚠️ [MAIN] Could not load .env file: $e');
+      debugPrint('   - Using default BACKEND_BASE_URL from api_client.dart');
+    }
+  } else {
+    // Production mode - .env is not available, use defaults from api_client.dart
+    debugPrint('✅ [MAIN] Production mode - using default backend URL from api_client.dart');
   }
   
   // Wrap app in error boundary to catch any initialization errors
