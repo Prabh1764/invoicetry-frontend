@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'providers/auth_provider.dart';
 import '../../data/repositories/auth_repo.dart';
+import '../../data/services/api_client.dart';
 import '../../router_simple.dart' show setAuthToken;
 
-class RegisterScreen extends ConsumerStatefulWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -37,8 +36,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      // Use auth repo directly to get the token (no provider watching)
-      final authRepo = ref.read(authRepoProvider);
+      // Use services DIRECTLY - no Riverpod providers at all
+      final apiClient = ApiClient();
+      final authRepo = AuthRepo(apiClient);
       final token = await authRepo.register(
         _emailController.text.trim(),
         _passwordController.text,
