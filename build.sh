@@ -3,23 +3,19 @@ set -e
 
 echo "🚀 Installing Flutter..."
 
-# Install Flutter
-FLUTTER_VERSION="3.24.0"
-FLUTTER_CHANNEL="stable"
-
-# Download Flutter
+# Install Flutter using git (more reliable)
 cd /tmp
-wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz || \
-wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.0-stable.tar.xz
+if [ ! -d "flutter" ]; then
+  echo "📥 Cloning Flutter repository..."
+  git clone https://github.com/flutter/flutter.git -b stable --depth 1
+fi
 
-# Extract Flutter
-tar xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz || tar xf flutter_linux_3.24.0-stable.tar.xz
 export PATH="$PATH:/tmp/flutter/bin"
 
 # Verify Flutter installation
 flutter --version
 
-# Go back to project directory
+# Go to project directory
 cd "$VERCEL_SOURCE_DIR" || cd "$(pwd)"
 
 echo "📦 Getting Flutter dependencies..."
@@ -29,4 +25,3 @@ echo "🔨 Building Flutter web app..."
 flutter build web --release --base-href=/
 
 echo "✅ Build complete!"
-
