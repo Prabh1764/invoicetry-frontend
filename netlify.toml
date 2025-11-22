@@ -1,7 +1,7 @@
 # Netlify configuration for Flutter PWA
 [build]
   publish = "build/web"
-  command = "flutter pub get && flutter build web --release"
+  command = "flutter pub get && flutter build web --release --base-href=/"
 
 [[redirects]]
   from = "/*"
