@@ -37,15 +37,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     try {
       final authNotifier = ref.read(authStateProvider.notifier);
-      final token = await authNotifier.register(
+      await authNotifier.register(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
       if (mounted) {
-        if (token != null) {
-          setAuthToken(token);
-          context.go('/home');
+        // After registration, check if we have a token now
+        // The register method updates the auth state, so we can navigate
+        // Try to read the token from the provider state
+        try {
+          final authState = ref.read(authStateProvider);
+          authState.when(
+            data: (token) {
+              if (token != null && mounted) {
+                setAuthToken(token);
+                context.go('/home');
+              }
+            },
+            loading: () {},
+            error: (error, _) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(error.toString())),
+                );
+              }
+            },
+          );
+        } catch (e) {
+          // If reading provider fails, just try to navigate anyway
+          // The router will handle auth check
+          if (mounted) {
+            context.go('/home');
+          }
         }
       }
     } catch (error) {
