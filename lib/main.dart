@@ -79,13 +79,22 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
     super.initState();
     // Catch Flutter framework errors
     FlutterError.onError = (FlutterErrorDetails details) {
-      if (mounted) {
+      // Try to extract more details from the error
+      debugPrint('❌ [ERROR_BOUNDARY] Flutter Error: ${details.exception}');
+      debugPrint('   - Error type: ${details.exception.runtimeType}');
+      debugPrint('   - Error toString: ${details.exception.toString()}');
+      debugPrint('   - Library: ${details.library}');
+      debugPrint('   - Information: ${details.informationCollector?.call()}');
+      debugPrint('   - Stack: ${details.stack}');
+      
+      // Only update state if mounted and error is not a font loading error
+      if (mounted && 
+          !details.exception.toString().contains('google_fonts') &&
+          !details.exception.toString().contains('fonts.gstatic.com')) {
         setState(() {
           _errorDetails = details;
         });
       }
-      debugPrint('❌ [ERROR_BOUNDARY] Flutter Error: ${details.exception}');
-      debugPrint('   Stack: ${details.stack}');
     };
   }
   
