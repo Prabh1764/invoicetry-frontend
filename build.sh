@@ -34,14 +34,18 @@ fi
 echo "✅ Found pubspec.yaml at: $(pwd)"
 
 echo "📦 Getting Flutter dependencies..."
-flutter pub get
+if ! flutter pub get; then
+  echo "❌ Failed to get dependencies"
+  exit 1
+fi
 
 echo "🔨 Building Flutter web app..."
-# Run with verbose output to see errors
-flutter build web --release --base-href=/ --verbose 2>&1 | tee build.log || {
-  echo "❌ Build failed! Last 50 lines of output:"
-  tail -50 build.log || echo "No build.log found"
+# Build and capture exit code
+if ! flutter build web --release --base-href=/ 2>&1; then
+  echo "❌ Build failed!"
+  echo "📋 Running flutter analyze to see errors..."
+  flutter analyze || true
   exit 1
-}
+fi
 
 echo "✅ Build complete!"
