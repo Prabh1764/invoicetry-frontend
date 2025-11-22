@@ -37,6 +37,11 @@ echo "📦 Getting Flutter dependencies..."
 flutter pub get
 
 echo "🔨 Building Flutter web app..."
-flutter build web --release --base-href=/
+# Run with verbose output to see errors
+flutter build web --release --base-href=/ --verbose 2>&1 | tee build.log || {
+  echo "❌ Build failed! Last 50 lines of output:"
+  tail -50 build.log || echo "No build.log found"
+  exit 1
+}
 
 echo "✅ Build complete!"
