@@ -134,6 +134,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'ProBilling',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           fontWeight: FontWeight.bold,
+                        ) ?? const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
                         ),
                     textAlign: TextAlign.center,
                   ),
