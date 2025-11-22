@@ -18,6 +18,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -39,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     
     try {
       setState(() {
-        // Show loading state
+        _isLoading = true;
       });
 
       debugPrint('📡 [LOGIN] Calling authNotifier.login()...');
@@ -81,7 +82,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } on Exception catch (e) {
         debugPrint('❌ [LOGIN] Login error: $e');
         if (mounted) {
-          setState(() {});
+          setState(() {
+            _isLoading = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login failed: ${e.toString()}'),
@@ -94,6 +97,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       debugPrint('💥 [LOGIN] Exception caught: $e');
       debugPrint('   - Stack: $stack');
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Login error: $e'),
@@ -107,18 +113,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Safely watch auth state with error handling
-    AsyncValue<AuthToken?> authState;
-    try {
-      authState = ref.watch(authStateProvider);
-    } catch (e, stack) {
-      debugPrint('❌ [LOGIN] Error watching authStateProvider: $e');
-      debugPrint('   - Stack: $stack');
-      // Use loading state as fallback
-      authState = const AsyncValue.loading();
-    }
-    
-    final isLoading = authState.isLoading;
+    // DON'T watch authStateProvider - it causes minified:WR error
+    // Use local _isLoading state instead
+    final isLoading = _isLoading;
 
     return Scaffold(
       body: SafeArea(
@@ -207,29 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     child: const Text('Don\'t have an account? Register'),
                   ),
-                  if (kDebugMode) ...[
-                    const SizedBox(height: 16),
-                    Consumer(
-                      builder: (context, ref, child) {
-                        final authState = ref.watch(authStateProvider);
-                        return Column(
-                          children: [
-                            Text(
-                              'Debug: ${authState.valueOrNull != null ? "Token exists" : "No token"}',
-                              style: const TextStyle(fontSize: 10, color: Colors.grey),
-                              textAlign: TextAlign.center,
-                            ),
-                            if (authState.hasError)
-                              Text(
-                                'Error: ${authState.error}',
-                                style: const TextStyle(fontSize: 10, color: Colors.red),
-                                textAlign: TextAlign.center,
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+                  // Debug section removed - was causing minified:WR error by watching authStateProvider
                 ],
               ),
             ),
