@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app.dart';
 
@@ -51,12 +50,10 @@ void main() async {
     debugPrint('✅ [MAIN] Production mode - using default backend URL from api_client.dart');
   }
   
-  // Wrap app in error boundary to catch any initialization errors
+  // NO RIVERPOD - Wrap app directly in error boundary
   runApp(
-    ProviderScope(
-      child: ErrorBoundary(
-        child: const App(),
-      ),
+    ErrorBoundary(
+      child: const App(),
     ),
   );
 }

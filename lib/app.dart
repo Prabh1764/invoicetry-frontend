@@ -1,17 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router_simple.dart';
 import 'theme/app_theme.dart';
 
 // Conditional import for web
 import 'dart:html' as html show window; // ignore: avoid_web_libraries_in_flutter
 
-class App extends ConsumerWidget {
+class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     try {
       // Use simple router - no Riverpod providers, no watching
       final router = createSimpleRouter();
