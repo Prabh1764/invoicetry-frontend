@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'providers/auth_provider.dart';
 import '../../data/models/auth_token.dart';
-import '../../router.dart' show updateGlobalAuthNotifier;
+import '../../router_simple.dart' show setAuthToken;
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -51,9 +51,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         if (!mounted) return;
         
-        // Update the global auth notifier FIRST - this triggers router refresh
-        debugPrint('🔧 [LOGIN] Updating global auth notifier with token...');
-        updateGlobalAuthNotifier(token);
+        // Update the simple auth notifier - this triggers router refresh
+        debugPrint('🔧 [LOGIN] Updating auth token...');
+        setAuthToken(token);
         
         // Wait a brief moment for state to propagate
         await Future.delayed(const Duration(milliseconds: 50));

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'router.dart';
+import 'router_simple.dart';
 import 'theme/app_theme.dart';
 
 // Conditional import for web
@@ -13,8 +13,8 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     try {
-      // Watch router - it will rebuild when auth state changes
-      final router = ref.watch(routerProvider);
+      // Use simple router - no Riverpod providers, no watching
+      final router = createSimpleRouter();
 
       return MaterialApp.router(
         title: 'ProBilling',
