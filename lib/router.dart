@@ -71,61 +71,102 @@ void updateGlobalAuthNotifier(AuthToken? token) {
 
 final routerProvider = Provider<GoRouter>((ref) {
   try {
-    // Listen to auth state changes and update the global notifier
-    // This will trigger the router's refreshListenable
-    ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
-    debugPrint('👂 [ROUTER] Auth state changed!');
-    final prevToken = previous?.valueOrNull;
-    final nextToken = next.valueOrNull;
-    debugPrint('   - Previous: ${prevToken != null ? "had token" : "no token"}');
-    debugPrint('   - Next: ${nextToken != null ? "has token" : "no token"}');
+    debugPrint('🔧 [ROUTER] Creating router provider...');
     
-    next.when(
-      data: (token) {
-        debugPrint('   → Auth state is data, token: ${token != null ? "EXISTS" : "NULL"}');
-        if (token != null) {
-          debugPrint('   → Token accessToken length: ${token.accessToken.length}');
+    // Try to listen to auth state changes (wrap in try-catch to handle errors)
+    try {
+      ref.listen<AsyncValue<AuthToken?>>(authStateProvider, (previous, next) {
+        try {
+          debugPrint('👂 [ROUTER] Auth state changed!');
+          final prevToken = previous?.valueOrNull;
+          final nextToken = next.valueOrNull;
+          debugPrint('   - Previous: ${prevToken != null ? "had token" : "no token"}');
+          debugPrint('   - Next: ${nextToken != null ? "has token" : "no token"}');
+          
+          next.when(
+            data: (token) {
+              try {
+                debugPrint('   → Auth state is data, token: ${token != null ? "EXISTS" : "NULL"}');
+                if (token != null) {
+                  debugPrint('   → Token accessToken length: ${token.accessToken.length}');
+                }
+                if (_globalAuthNotifier.value != token) {
+                  debugPrint('   → Updating global notifier with token');
+                  _globalAuthNotifier.value = token;
+                  debugPrint('   → Updated notifier value: ${_globalAuthNotifier.value != null ? "SET" : "NULL"}');
+                } else {
+                  debugPrint('   → Token unchanged, skipping update');
+                }
+              } catch (e, stack) {
+                debugPrint('❌ [ROUTER] Error in auth state data handler: $e');
+                debugPrint('   - Stack: $stack');
+              }
+            },
+            loading: () {
+              debugPrint('   → Auth state loading, keeping current value');
+            },
+            error: (error, stack) {
+              debugPrint('   → Auth state error: $error');
+              debugPrint('   → Setting global notifier to null');
+              try {
+                _globalAuthNotifier.value = null;
+              } catch (e) {
+                debugPrint('❌ [ROUTER] Error setting notifier to null: $e');
+              }
+            },
+          );
+        } catch (e, stack) {
+          debugPrint('❌ [ROUTER] Error in auth state listener: $e');
+          debugPrint('   - Stack: $stack');
         }
-        if (_globalAuthNotifier.value != token) {
-          debugPrint('   → Updating global notifier with token');
-          _globalAuthNotifier.value = token;
-          // Notify listeners to trigger router refresh (ValueNotifier automatically notifies on value change)
-          debugPrint('   → Updated notifier value: ${_globalAuthNotifier.value != null ? "SET" : "NULL"}');
-        } else {
-          debugPrint('   → Token unchanged, skipping update');
+      });
+      debugPrint('✅ [ROUTER] Auth state listener registered');
+    } catch (e, stack) {
+      debugPrint('❌ [ROUTER] Failed to register auth state listener: $e');
+      debugPrint('   - Error type: ${e.runtimeType}');
+      debugPrint('   - Stack: $stack');
+      // Continue anyway - router will work without listener
+    }
+  
+    // Initialize with current state (safely)
+    AsyncValue<AuthToken?> currentAuthState;
+    try {
+      debugPrint('🔧 [ROUTER] Watching authStateProvider...');
+      currentAuthState = ref.watch(authStateProvider);
+      debugPrint('✅ [ROUTER] Successfully watched authStateProvider');
+    } catch (e, stack) {
+      debugPrint('❌ [ROUTER] Error watching authStateProvider: $e');
+      debugPrint('   - Error type: ${e.runtimeType}');
+      debugPrint('   - Stack: $stack');
+      // Use loading state as fallback
+      currentAuthState = const AsyncValue.loading();
+    }
+    
+    currentAuthState.when(
+      data: (token) {
+        try {
+          if (_globalAuthNotifier.value != token) {
+            debugPrint('🔧 [ROUTER] Initializing global notifier: ${token != null ? "with token" : "null"}');
+            _globalAuthNotifier.value = token;
+          }
+        } catch (e) {
+          debugPrint('❌ [ROUTER] Error initializing notifier: $e');
         }
       },
       loading: () {
-        debugPrint('   → Auth state loading, keeping current value');
-        // Keep current value while loading
+        debugPrint('🔧 [ROUTER] Auth state is loading, keeping current value');
       },
       error: (error, stack) {
-        debugPrint('   → Auth state error: $error');
-        debugPrint('   → Setting global notifier to null');
-        // On error, set to null (not authenticated)
-        _globalAuthNotifier.value = null;
-        _globalAuthNotifier.notifyListeners();
+        debugPrint('🔧 [ROUTER] Auth state error during init: $error');
+        debugPrint('   - Error type: ${error.runtimeType}');
+        debugPrint('   - Stack: $stack');
+        try {
+          _globalAuthNotifier.value = null;
+        } catch (e) {
+          debugPrint('❌ [ROUTER] Error setting notifier to null: $e');
+        }
       },
     );
-  });
-  
-  // Initialize with current state (safely)
-  final currentAuthState = ref.watch(authStateProvider);
-  currentAuthState.when(
-    data: (token) {
-      if (_globalAuthNotifier.value != token) {
-        debugPrint('🔧 [ROUTER] Initializing global notifier: ${token != null ? "with token" : "null"}');
-        _globalAuthNotifier.value = token;
-      }
-    },
-    loading: () {
-      // Keep current value while loading
-    },
-    error: (error, stack) {
-      debugPrint('🔧 [ROUTER] Auth state error during init: $error');
-      _globalAuthNotifier.value = null;
-    },
-  );
 
   return GoRouter(
     initialLocation: '/login',
