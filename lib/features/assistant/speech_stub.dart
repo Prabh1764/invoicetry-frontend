@@ -1,4 +1,5 @@
 // Stub for speech_to_text on web (may not work)
+// Import kIsWeb for conditional checks
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 // Stub classes for web
@@ -16,4 +17,3 @@ class SpeechRecognitionError {
   final int errorType;
   SpeechRecognitionError({required this.errorMsg, required this.errorType});
 }
-

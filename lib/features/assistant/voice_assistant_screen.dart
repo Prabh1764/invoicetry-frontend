@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 // Conditionally import speech_to_text (may not work on web)
 import 'package:speech_to_text/speech_to_text.dart' as stt
-    if (dart.library.html) 'speech_stub.dart' as stt;
+    if (dart.library.html) 'speech_stub.dart';
 import 'package:speech_to_text/speech_recognition_error.dart'
     if (dart.library.html) 'speech_stub.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderSubscription;

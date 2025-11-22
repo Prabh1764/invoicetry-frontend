@@ -1,9 +1,9 @@
 // Stub for path_provider on web (limited support)
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
 
 // Stub for getTemporaryDirectory on web
-Future<Directory> getTemporaryDirectory() async {
+// Note: Directory is not available on web, so we use dynamic
+Future<dynamic> getTemporaryDirectory() async {
   if (kIsWeb) {
     throw UnsupportedError('getTemporaryDirectory not available on web');
   }
