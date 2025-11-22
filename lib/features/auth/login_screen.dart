@@ -106,7 +106,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
+    // Safely watch auth state with error handling
+    AsyncValue<AuthToken?> authState;
+    try {
+      authState = ref.watch(authStateProvider);
+    } catch (e, stack) {
+      debugPrint('❌ [LOGIN] Error watching authStateProvider: $e');
+      debugPrint('   - Stack: $stack');
+      // Use loading state as fallback
+      authState = const AsyncValue.loading();
+    }
+    
     final isLoading = authState.isLoading;
 
     return Scaffold(
