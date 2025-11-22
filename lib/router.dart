@@ -119,18 +119,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               }
             },
           );
-        } catch (e, stack) {
-          debugPrint('❌ [ROUTER] Error in auth state listener: $e');
-          debugPrint('   - Stack: $stack');
-        }
-          });
+            } catch (e, stack) {
+              debugPrint('❌ [ROUTER] Error in auth state listener: $e');
+              debugPrint('   - Stack: $stack');
+            }
+          }); // Close ref.listen callback
           debugPrint('✅ [ROUTER] Auth state listener registered (delayed)');
         } catch (e, stack) {
           debugPrint('❌ [ROUTER] Failed to register auth state listener (delayed): $e');
           debugPrint('   - Error type: ${e.runtimeType}');
           debugPrint('   - Stack: $stack');
         }
-      });
+      }); // Close Future.microtask callback
     } catch (e, stack) {
       debugPrint('❌ [ROUTER] Failed to schedule auth state listener: $e');
       debugPrint('   - Error type: ${e.runtimeType}');
