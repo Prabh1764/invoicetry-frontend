@@ -21,7 +21,15 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthToken?>> {
 
   AuthNotifier(this._authRepo, this._apiClient) : super(const AsyncValue.loading()) {
     // Initialize auth state by checking for existing token
-    _initializeAuth();
+    // Use unawaited to prevent blocking, but catch errors
+    _initializeAuth().catchError((error, stack) {
+      debugPrint('❌ [AUTH] Unhandled error in _initializeAuth: $error');
+      debugPrint('   - Stack: $stack');
+      // Ensure state is set even on error
+      if (!_hasInitialized) {
+        state = const AsyncValue.data(null);
+      }
+    });
   }
 
   Future<void> _initializeAuth() async {
@@ -31,8 +39,14 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthToken?>> {
     try {
       debugPrint('🔍 [AUTH] Initializing auth state...');
       
-      // Check if token exists in storage
-      final tokenString = await _apiClient.getToken();
+      // Check if token exists in storage (with timeout to prevent hanging)
+      final tokenString = await _apiClient.getToken().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('⚠️ [AUTH] getToken() timed out, assuming no token');
+          return null;
+        },
+      );
       if (tokenString != null && tokenString.isNotEmpty) {
         debugPrint('✅ [AUTH] Found token in storage (length: ${tokenString.length})');
         debugPrint('   - Token preview: ${tokenString.substring(0, tokenString.length > 30 ? 30 : tokenString.length)}...');
