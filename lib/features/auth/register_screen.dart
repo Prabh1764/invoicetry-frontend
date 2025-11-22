@@ -17,6 +17,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,34 +30,41 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authNotifier = ref.read(authStateProvider.notifier);
-    await authNotifier.register(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (mounted) {
-      final authState = ref.read(authStateProvider);
-      authState.when(
-        data: (token) {
-          if (token != null) {
-            context.go('/home');
-          }
-        },
-        loading: () {},
-        error: (error, _) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString())),
-          );
-        },
+    try {
+      final authNotifier = ref.read(authStateProvider.notifier);
+      final token = await authNotifier.register(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
+
+      if (mounted) {
+        if (token != null) {
+          context.go('/home');
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString())),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
-
+    // DON'T watch authStateProvider - it causes minified:WR error
+    // Use local _isLoading state instead
     final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
@@ -152,8 +160,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: authState.isLoading ? null : _handleRegister,
-                  child: authState.isLoading
+                  onPressed: _isLoading ? null : _handleRegister,
+                  child: _isLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
